@@ -69,11 +69,28 @@ function Feature-Finish {
 function Release-Start {
     param([string]$Name)
 
+    # create release branch from develop
+
+    git checkout develop
+    git pull --rebase
+    git checkout -b release/$Name
 }
 
 function Release-Finish {
     param([string]$Name)
 
+    # merge the release branch into main and tag it
+
+    git checkout main
+    git pull --rebase
+    git merge --no-ff release/$Name
+    git tag -a $Name
+
+    # merge the tag into develop
+
+    git checkout develop
+    git pull --rebase
+    git merge --no-ff $Name
 }
 
 function Hotfix-Start {
