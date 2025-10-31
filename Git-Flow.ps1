@@ -49,11 +49,21 @@ function Git-Flow {
 function Feature-Start {
     param([string]$Name)
 
+    git checkout $DEVELOP
+    git pull --rebase
+    git checkout -b feature/$Name
 }
 
 function Feature-Finish {
     param([string]$Name)
 
+    git checkout feature/$Name
+    git pull --rebase
+
+    git checkout $DEVELOP
+    git pull --rebase
+
+    git merge feature/$Name
 }
 
 function Release-Start {
