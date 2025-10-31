@@ -96,11 +96,27 @@ function Release-Finish {
 function Hotfix-Start {
     param([string]$Name)
 
+    # create hotfix branch from main
+
+    git checkout $MAIN
+    git pull --rebase
+    git checkout -b hotfix/$Name
 }
 
 function Hotfix-Finish {
     param([string]$Name)
 
+    # merge the hotfix branch into main and tag it
+
+    git checkout $MAIN
+    git merge --no-ff hotfix/$Name
+    git tag -a $Name
+
+    # merge the tag into develop
+
+    git checkout develop
+    git pull --rebase
+    git merge --no-ff $Name
 }
 
 If ($MyInvocation.InvocationName -ne ".")
