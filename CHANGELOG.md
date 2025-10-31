@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.1.2
+
+feature finish should do a `--no-ff` merge
+
 ## 0.1.1
 
 make sure branches are fully up-to-date before merging
