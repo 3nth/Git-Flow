@@ -1,6 +1,8 @@
 param(
+    [ValidateSet("feature","release", "hotfix")]
     [Parameter(Position = 0)]
     [string]$Command,
+    [ValidateSet("start","finish")]
     [Parameter(Position = 1)]
     [string]$Action,
     [Parameter(Position = 2)]
