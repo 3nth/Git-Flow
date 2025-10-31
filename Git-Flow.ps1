@@ -63,7 +63,7 @@ function Feature-Finish {
     git checkout $DEVELOP
     git pull --rebase
 
-    git merge feature/$Name
+    git merge --no-ff feature/$Name
 }
 
 function Release-Start {
