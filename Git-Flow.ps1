@@ -1,11 +1,11 @@
 param(
     [ValidateSet("feature","release", "hotfix")]
-    [Parameter(Position = 0)]
+    [Parameter(Position = 0, Mandatory=$true)]
     [string]$Command,
     [ValidateSet("start","finish")]
-    [Parameter(Position = 1)]
+    [Parameter(Position = 1, Mandatory=$true)]
     [string]$Action,
-    [Parameter(Position = 2)]
+    [Parameter(Position = 2, Mandatory=$true)]
     [string]$Name
 )
 
