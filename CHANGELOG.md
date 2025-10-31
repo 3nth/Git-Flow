@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.1.1
+
+make sure branches are fully up-to-date before merging
+
 ## 0.1.0
 
 Just the basics for:

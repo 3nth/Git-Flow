@@ -80,9 +80,12 @@ function Release-Finish {
     param([string]$Name)
 
     # merge the release branch into main and tag it
+    git checkout release/$Name
+    git pull --rebase
 
     git checkout $MAIN
     git pull --rebase
+
     git merge --no-ff release/$Name
     git tag -a $Name
 
@@ -107,8 +110,12 @@ function Hotfix-Finish {
     param([string]$Name)
 
     # merge the hotfix branch into main and tag it
+    git checkout hotfix/$Name
+    git pull --rebase
 
     git checkout $MAIN
+    git pull --rebase
+
     git merge --no-ff hotfix/$Name
     git tag -a $Name
 
