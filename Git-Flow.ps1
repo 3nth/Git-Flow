@@ -71,7 +71,7 @@ function Release-Start {
 
     # create release branch from develop
 
-    git checkout develop
+    git checkout $DEVELOP
     git pull --rebase
     git checkout -b release/$Name
 }
@@ -81,14 +81,14 @@ function Release-Finish {
 
     # merge the release branch into main and tag it
 
-    git checkout main
+    git checkout $MAIN
     git pull --rebase
     git merge --no-ff release/$Name
     git tag -a $Name
 
     # merge the tag into develop
 
-    git checkout develop
+    git checkout $DEVELOP
     git pull --rebase
     git merge --no-ff $Name
 }
@@ -114,7 +114,7 @@ function Hotfix-Finish {
 
     # merge the tag into develop
 
-    git checkout develop
+    git checkout $DEVELOP
     git pull --rebase
     git merge --no-ff $Name
 }
