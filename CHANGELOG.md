@@ -3,6 +3,7 @@
 ## 0.4.1
 
 - FIX: Feature-Start needs to call HasRemote
+
 ## 0.4.0
 
 - FIX: don't exit shell on error
