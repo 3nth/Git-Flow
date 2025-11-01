@@ -1,9 +1,11 @@
 param(
-    [Parameter(Position = 0)]
+    [ValidateSet("feature","release", "hotfix")]
+    [Parameter(Position = 0, Mandatory=$true)]
     [string]$Command,
-    [Parameter(Position = 1)]
+    [ValidateSet("start","finish")]
+    [Parameter(Position = 1, Mandatory=$true)]
     [string]$Action,
-    [Parameter(Position = 2)]
+    [Parameter(Position = 2, Mandatory=$true)]
     [string]$Name
 )
 
@@ -67,7 +69,7 @@ function Feature-Finish {
 }
 
 function Release-Start {
-    param([string]$Name)
+    param([version]$Name)
 
     # create release branch from develop
 
@@ -77,7 +79,7 @@ function Release-Start {
 }
 
 function Release-Finish {
-    param([string]$Name)
+    param([version]$Name)
 
     # merge the release branch into main and tag it
     git checkout release/$Name
@@ -97,7 +99,7 @@ function Release-Finish {
 }
 
 function Hotfix-Start {
-    param([string]$Name)
+    param([version]$Name)
 
     # create hotfix branch from main
 
@@ -107,7 +109,7 @@ function Hotfix-Start {
 }
 
 function Hotfix-Finish {
-    param([string]$Name)
+    param([version]$Name)
 
     # merge the hotfix branch into main and tag it
     git checkout hotfix/$Name
