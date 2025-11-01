@@ -10,6 +10,20 @@ param(
 $DEVELOP = "develop"
 $MAIN = "main"
 
+function GetBranches {
+    param(
+        [string]$Command
+    )
+    git branch --list "$Command/*" | ForEach-Object { $_ -replace "$Command/", "" -replace "\* ", "" }
+}
+
+Register-ArgumentCompleter -CommandName Git-Flow -ParameterName Name -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+    if("finish" -eq $fakeBoundParameter.Action) {
+        GetBranches $fakeBoundParameter.Command | Where-Object { $_ -like "${wordToComplete}*" }
+    }
+}
+
 $REMOTE = $null
 
 function Has-Remote {
