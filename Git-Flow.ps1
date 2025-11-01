@@ -1,16 +1,28 @@
 param(
-    [ValidateSet("feature","release", "hotfix")]
-    [Parameter(Position = 0, Mandatory=$true)]
+    [Parameter()]
     [string]$Command,
-    [ValidateSet("start","finish")]
-    [Parameter(Position = 1, Mandatory=$true)]
+    [Parameter()]
     [string]$Action,
-    [Parameter(Position = 2, Mandatory=$true)]
+    [Parameter()]
     [string]$Name
 )
 
 $DEVELOP = "develop"
 $MAIN = "main"
+
+function GetBranches {
+    param(
+        [string]$Command
+    )
+    git branch --list "$Command/*" | ForEach-Object { $_ -replace "$Command/", "" -replace "\* ", "" }
+}
+
+Register-ArgumentCompleter -CommandName Git-Flow -ParameterName Name -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+    if("finish" -eq $fakeBoundParameter.Action) {
+        GetBranches $fakeBoundParameter.Command | Where-Object { $_ -like "${wordToComplete}*" }
+    }
+}
 
 $REMOTE = $null
 
@@ -23,7 +35,33 @@ function ExitOnError {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
+function ExitIfNotVersionNumber {
+    param(
+        [string]$Name
+    )
+
+    $Version = $Name -as [version]
+    
+    if ($null -eq ($Version)) { 
+        Write-Host "$Name is not a version number" -Fore Red
+        exit 1
+    }
+
+    if(-1 -eq $Version.Build) { 
+        Write-Host "$Name is missing a revision number" -Fore Red
+        exit 1
+    }
+}
+
 function Git-Flow {
+    param(
+        [ArgumentCompletions('feature', 'release', 'hotfix')]
+        [string]$Command,
+        [ArgumentCompletions('start', 'finish')]
+        [string]$Action,
+        [string]$Name
+    )
+
     switch ($Command)
     {
         "feature" {
@@ -33,6 +71,9 @@ function Git-Flow {
                 }
                 "finish" {
                     Feature-Finish $Name
+                }
+                default {
+                    Write-Host "Unknown Action:" $Action -Fore Red
                 }
             }
         }
@@ -44,6 +85,9 @@ function Git-Flow {
                 "finish" {
                     Release-Finish $Name
                 }
+                default {
+                    Write-Host "Unknown Action:" $Action -Fore Red
+                }
             }
         }
         "hotfix" {
@@ -54,7 +98,13 @@ function Git-Flow {
                 "finish" {
                     Hotfix-Finish $Name
                 }
+                default {
+                    Write-Host "Unknown Action:" $Action -Fore Red
+                }
             }
+        }
+        default {
+            Write-Host "Unknown Command:" $Command -Fore Red
         }
     }
 }
@@ -82,7 +132,9 @@ function Feature-Finish {
 }
 
 function Release-Start {
-    param([version]$Name)
+    param([string]$Name)
+
+    ExitIfNotVersionNumber $Name
 
     # create release branch from develop
 
@@ -92,7 +144,9 @@ function Release-Start {
 }
 
 function Release-Finish {
-    param([version]$Name)
+    param([string]$Name)
+
+    ExitIfNotVersionNumber $Name
 
     # merge the release branch into main and tag it
     git checkout release/$Name || ExitOnError
@@ -114,7 +168,9 @@ function Release-Finish {
 }
 
 function Hotfix-Start {
-    param([version]$Name)
+    param([string]$Name)
+
+    ExitIfNotVersionNumber $Name
 
     # create hotfix branch from main
 
@@ -124,7 +180,9 @@ function Hotfix-Start {
 }
 
 function Hotfix-Finish {
-    param([version]$Name)
+    param([string]$Name)
+
+    ExitIfNotVersionNumber $Name
 
     # merge the hotfix branch into main and tag it
     git checkout hotfix/$Name || ExitOnError
@@ -147,5 +205,5 @@ function Hotfix-Finish {
 
 If ($MyInvocation.InvocationName -ne ".")
 {
-    Git-Flow
+    Git-Flow $Command $Action $Name
 }
