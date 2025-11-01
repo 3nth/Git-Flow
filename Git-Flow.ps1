@@ -24,11 +24,9 @@ Register-ArgumentCompleter -CommandName Git-Flow -ParameterName Name -ScriptBloc
     }
 }
 
-$REMOTE = $null
-
-function Has-Remote {
-    $REMOTE ??= git remote
-    return $null -ne $REMOTE | Out-Null
+function HasRemote {
+    $output = git remote
+    return $null -ne $output | Out-Null
 }
 
 function VersionNumberIsValid {
@@ -130,18 +128,20 @@ function Feature-Start {
     param([string]$Name)
 
     git checkout $DEVELOP || { return }
-    Has-Remote || git pull --rebase || { return }
+    if($Remote) { git pull --rebase || { return } }
     git checkout -b feature/$Name || { return }
 }
 
 function Feature-Finish {
     param([string]$Name)
 
+    $Remote = HasRemote
+
     git checkout feature/$Name || { return }
-    Has-Remote || git pull --rebase || { return }
+    if($Remote) { git pull --rebase || { return } }
 
     git checkout $DEVELOP || { return }
-    Has-Remote || git pull --rebase || { return }
+    if($Remote) { git pull --rebase || { return } }
 
     git merge --no-ff --no-edit feature/$Name || { return }
 
@@ -153,10 +153,12 @@ function Release-Start {
 
     if(!(VersionNumberIsValid "release" $Name)) { return }
 
+    $Remote = HasRemote
+
     # create release branch from develop
 
     git checkout $DEVELOP || { return }
-    Has-Remote || git pull --rebase || { return }
+    if($Remote) { git pull --rebase || { return } }
     git checkout -b release/$Name || { return }
 }
 
@@ -165,12 +167,14 @@ function Release-Finish {
 
     if(!(VersionNumberIsValid "release" $Name)) { return }
 
+    $Remote = HasRemote
+
     # merge the release branch into main and tag it
     git checkout release/$Name || { return }
-    Has-Remote || git pull --rebase || { return }
+    if($Remote) { git pull --rebase || { return } }
 
     git checkout $MAIN || { return }
-    Has-Remote || git pull --rebase || { return }
+    if($Remote) { git pull --rebase || { return } }
 
     git merge --no-ff --no-edit release/$Name || { return }
     git tag -a $Name || { return }
@@ -178,7 +182,7 @@ function Release-Finish {
     # merge the tag into develop
 
     git checkout $DEVELOP || { return }
-    Has-Remote || git pull --rebase || { return }
+    if($Remote) { git pull --rebase || { return } }
     git merge --no-ff --no-edit $Name || { return }
 
     git branch -d release/$Name || { return }
@@ -189,10 +193,12 @@ function Hotfix-Start {
 
     if(!(VersionNumberIsValid "hotfix" $Name)) { return }
 
+    $Remote = HasRemote
+
     # create hotfix branch from main
 
     git checkout $MAIN || { return }
-    Has-Remote || git pull --rebase || { return }
+    if($Remote) { git pull --rebase || { return } }
     git checkout -b hotfix/$Name || { return }
 }
 
@@ -201,12 +207,14 @@ function Hotfix-Finish {
 
     if(!(VersionNumberIsValid "hotfix" $Name)) { return }
 
+    $Remote = HasRemote
+
     # merge the hotfix branch into main and tag it
     git checkout hotfix/$Name || { return }
-    Has-Remote || git pull --rebase || { return }
+    if($Remote) { git pull --rebase || { return } }
 
     git checkout $MAIN || { return }
-    Has-Remote || git pull --rebase || { return }
+    if($Remote) { git pull --rebase || { return } }
 
     git merge --no-ff --no-edit hotfix/$Name || { return }
     git tag -a $Name || { return }
@@ -214,7 +222,7 @@ function Hotfix-Finish {
     # merge the tag into develop
 
     git checkout $DEVELOP || { return }
-    Has-Remote || git pull --rebase || { return }
+    if($Remote) { git pull --rebase || { return } }
     git merge --no-ff --no-edit $Name || { return }
 
     git branch -d hotfix/$Name || { return }
