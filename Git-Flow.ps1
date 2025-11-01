@@ -127,6 +127,8 @@ function Git-Flow {
 function Feature-Start {
     param([string]$Name)
 
+    $Remote = HasRemote
+
     git checkout $DEVELOP || { return }
     if($Remote) { git pull --rebase || { return } }
     git checkout -b feature/$Name || { return }
