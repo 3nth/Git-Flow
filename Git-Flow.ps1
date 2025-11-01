@@ -41,7 +41,7 @@ function ExitIfNotVersionNumber {
     )
 
     $Version = $Name -as [version]
-    
+
     if ($null -eq ($Version)) { 
         Write-Host "$Name is not a version number" -Fore Red
         exit 1
@@ -74,6 +74,7 @@ function Git-Flow {
                 }
                 default {
                     Write-Host "Unknown Action:" $Action -Fore Red
+                    Write-Host "Valid actions are: start, finish" $Command -Fore Cyan
                 }
             }
         }
@@ -87,6 +88,7 @@ function Git-Flow {
                 }
                 default {
                     Write-Host "Unknown Action:" $Action -Fore Red
+                    Write-Host "Valid actions are: start, finish" $Command -Fore Cyan
                 }
             }
         }
@@ -100,11 +102,13 @@ function Git-Flow {
                 }
                 default {
                     Write-Host "Unknown Action:" $Action -Fore Red
+                    Write-Host "Valid actions are: start, finish" $Command -Fore Cyan
                 }
             }
         }
         default {
             Write-Host "Unknown Command:" $Command -Fore Red
+            Write-Host "Valid commands are: feature, release, hotfix" $Command -Fore Cyan
         }
     }
 }

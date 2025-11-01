@@ -4,6 +4,8 @@ git flow reimplemented as a PowerShell script.
 
 ## Installation
 
+Requires PowerShell 7+
+
 Download [Git-Flow.ps1](Git-Flow.ps1) and put it somewhere nice.
 
 ## git Integration
@@ -18,10 +20,8 @@ To use it as `git flow` add an alias
 
 ## PowerShell Integration
 
-You can also import the `Git-Flow` function into PowerShell:
+You can also import the `Git-Flow` function into PowerShell and get tab completion when calling.
 
     . ~/Git-Flow/Git-Flow.ps1
 
-add that line to `$PROFILE` to make it permanent.
-
-and get tab completion when calling.
+Add that line to your `$PROFILE` to make it permanent.
