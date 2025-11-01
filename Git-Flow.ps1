@@ -77,6 +77,8 @@ function Feature-Finish {
     Has-Remote || git pull --rebase || ExitOnError
 
     git merge --no-ff --no-edit feature/$Name || ExitOnError
+
+    git branch -d feature/$Name || ExitOnError
 }
 
 function Release-Start {
@@ -107,6 +109,8 @@ function Release-Finish {
     git checkout $DEVELOP || ExitOnError
     Has-Remote || git pull --rebase || ExitOnError
     git merge --no-ff --no-edit $Name || ExitOnError
+
+    git branch -d release/$Name || ExitOnError
 }
 
 function Hotfix-Start {
@@ -137,6 +141,8 @@ function Hotfix-Finish {
     git checkout $DEVELOP || ExitOnError
     Has-Remote || git pull --rebase || ExitOnError
     git merge --no-ff --no-edit $Name || ExitOnError
+
+    git branch -d hotfix/$Name || ExitOnError
 }
 
 If ($MyInvocation.InvocationName -ne ".")
