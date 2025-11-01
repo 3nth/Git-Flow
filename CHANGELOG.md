@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.3.1
+
+- Better error messages
+
 ## 0.3.0
 
 - make it work nicely as an imported function `Git-Flow`
