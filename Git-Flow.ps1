@@ -41,13 +41,13 @@ function ExitIfNotVersionNumber {
     )
 
     $Version = $Name -as [version]
-
-    if ($null -eq ($Name -as [version])) { 
+    
+    if ($null -eq ($Version)) { 
         Write-Host "$Name is not a version number" -Fore Red
         exit 1
     }
 
-    if(-1 -eq $Version.Revision) { 
+    if(-1 -eq $Version.Build) { 
         Write-Host "$Name is missing a revision number" -Fore Red
         exit 1
     }
