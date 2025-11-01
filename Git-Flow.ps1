@@ -12,6 +12,10 @@ param(
 $DEVELOP = "develop"
 $MAIN = "main"
 
+function ExitOnError {
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
+
 function Git-Flow {
     switch ($Command)
     {
@@ -51,21 +55,21 @@ function Git-Flow {
 function Feature-Start {
     param([string]$Name)
 
-    git checkout $DEVELOP
-    git pull --rebase
-    git checkout -b feature/$Name
+    git checkout $DEVELOP || ExitOnError
+    git pull --rebase || ExitOnError
+    git checkout -b feature/$Name || ExitOnError
 }
 
 function Feature-Finish {
     param([string]$Name)
 
-    git checkout feature/$Name
-    git pull --rebase
+    git checkout feature/$Name || ExitOnError
+    git pull --rebase || ExitOnError
 
-    git checkout $DEVELOP
-    git pull --rebase
+    git checkout $DEVELOP || ExitOnError
+    git pull --rebase || ExitOnError
 
-    git merge --no-ff feature/$Name
+    git merge --no-ff feature/$Name || ExitOnError
 }
 
 function Release-Start {
@@ -73,29 +77,29 @@ function Release-Start {
 
     # create release branch from develop
 
-    git checkout $DEVELOP
-    git pull --rebase
-    git checkout -b release/$Name
+    git checkout $DEVELOP || ExitOnError
+    git pull --rebase || ExitOnError
+    git checkout -b release/$Name || ExitOnError
 }
 
 function Release-Finish {
     param([version]$Name)
 
     # merge the release branch into main and tag it
-    git checkout release/$Name
-    git pull --rebase
+    git checkout release/$Name || ExitOnError
+    git pull --rebase || ExitOnError
 
-    git checkout $MAIN
-    git pull --rebase
+    git checkout $MAIN || ExitOnError
+    git pull --rebase || ExitOnError
 
-    git merge --no-ff release/$Name
-    git tag -a $Name
+    git merge --no-ff release/$Name || ExitOnError
+    git tag -a $Name || ExitOnError
 
     # merge the tag into develop
 
-    git checkout $DEVELOP
-    git pull --rebase
-    git merge --no-ff $Name
+    git checkout $DEVELOP || ExitOnError
+    git pull --rebase || ExitOnError
+    git merge --no-ff $Name || ExitOnError
 }
 
 function Hotfix-Start {
@@ -103,29 +107,29 @@ function Hotfix-Start {
 
     # create hotfix branch from main
 
-    git checkout $MAIN
-    git pull --rebase
-    git checkout -b hotfix/$Name
+    git checkout $MAIN || ExitOnError
+    git pull --rebase || ExitOnError
+    git checkout -b hotfix/$Name || ExitOnError
 }
 
 function Hotfix-Finish {
     param([version]$Name)
 
     # merge the hotfix branch into main and tag it
-    git checkout hotfix/$Name
-    git pull --rebase
+    git checkout hotfix/$Name || ExitOnError
+    git pull --rebase || ExitOnError
 
-    git checkout $MAIN
-    git pull --rebase
+    git checkout $MAIN || ExitOnError
+    git pull --rebase || ExitOnError
 
-    git merge --no-ff hotfix/$Name
-    git tag -a $Name
+    git merge --no-ff hotfix/$Name || ExitOnError
+    git tag -a $Name || ExitOnError
 
     # merge the tag into develop
 
-    git checkout $DEVELOP
-    git pull --rebase
-    git merge --no-ff $Name
+    git checkout $DEVELOP || ExitOnError
+    git pull --rebase || ExitOnError
+    git merge --no-ff $Name || ExitOnError
 }
 
 If ($MyInvocation.InvocationName -ne ".")
