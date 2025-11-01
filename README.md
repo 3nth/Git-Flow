@@ -13,10 +13,10 @@ Download [Git-Flow.ps1](Git-Flow.ps1) and put it somewhere nice.
 To use it as `git flow` add an alias
 
     # Windows
-    git config --global alias.flow "!pwsh -NoProfile -File D:/Git-Flow/Git-Flow.ps1"
+    git config --global alias.flow "!pwsh -NoProfile -File ~/Git-Flow.ps1"
 
     # Linux
-    git config --global alias.flow '!pwsh -NoProfile -File ~/Git-Flow/Git-Flow.ps1'
+    git config --global alias.flow '!pwsh -NoProfile -File ~/Git-Flow.ps1'
 
 ## PowerShell Integration
 
@@ -25,3 +25,19 @@ You can also import the `Git-Flow` function into PowerShell and get tab completi
     . ~/Git-Flow/Git-Flow.ps1
 
 Add that line to your `$PROFILE` to make it permanent.
+
+
+## DOES
+
+- It does `git flow feature`
+- It does `git flow release` and want's X.Y.Z version numbers
+- It does `git flow hotfix` and wants X.Y.Z version numbers
+- It does expect a `main` and `develop` branch to exist.
+
+## DOESN'T
+
+- It doesn't do `git flow publish`. `git push` it all you want.
+- It doesn't do `git flow init` as there isn't any customization.
+- It doesn't do `git flow delete`. `git branch -d` to your hearts content.
+- It doesn't do `git flow bugfix`. Never really used that one.
+- It doesn't do `git flow support`. Never really used that one either.
