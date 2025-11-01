@@ -30,9 +30,10 @@ Add that line to your `$PROFILE` to make it permanent.
 ## DOES
 
 - It does `git flow feature`
-- It does `git flow release` and want's X.Y.Z version numbers
-- It does `git flow hotfix` and wants X.Y.Z version numbers
-- It does expect a `main` and `develop` branch to exist.
+- It does `git flow release` and want's `MAJOR.MINOR.PATCH` version numbers
+- It does `git flow hotfix` and wants `MAJOR.MINOR.PATCH` version numbers
+- It does expect your production branch is named `main` 
+- It does expect your development branch is named `develop`
 
 ## DOESN'T
 
