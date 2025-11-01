@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.3.0
+
+- make it work nicely as an imported function `Git-Flow`
+- redo validation for cleaner messages
+- add autocompleter for finish branch name
+
 ## 0.2.0
 
 - Exit on first failed command
