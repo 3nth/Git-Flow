@@ -22,7 +22,7 @@ To use it as `git flow` add an alias
 
 You can also import the `Git-Flow` function into PowerShell and get tab completion when calling.
 
-    . ~/Git-Flow/Git-Flow.ps1
+    . ~/Git-Flow.ps1
 
 Add that line to your `$PROFILE` to make it permanent.
 
