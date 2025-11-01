@@ -76,7 +76,7 @@ function Feature-Finish {
     git checkout $DEVELOP || ExitOnError
     Has-Remote || git pull --rebase || ExitOnError
 
-    git merge --no-ff feature/$Name || ExitOnError
+    git merge --no-ff --no-edit feature/$Name || ExitOnError
 }
 
 function Release-Start {
@@ -99,14 +99,14 @@ function Release-Finish {
     git checkout $MAIN || ExitOnError
     Has-Remote || git pull --rebase || ExitOnError
 
-    git merge --no-ff release/$Name || ExitOnError
+    git merge --no-ff --no-edit release/$Name || ExitOnError
     git tag -a $Name || ExitOnError
 
     # merge the tag into develop
 
     git checkout $DEVELOP || ExitOnError
     Has-Remote || git pull --rebase || ExitOnError
-    git merge --no-ff $Name || ExitOnError
+    git merge --no-ff --no-edit $Name || ExitOnError
 }
 
 function Hotfix-Start {
@@ -129,14 +129,14 @@ function Hotfix-Finish {
     git checkout $MAIN || ExitOnError
     Has-Remote || git pull --rebase || ExitOnError
 
-    git merge --no-ff hotfix/$Name || ExitOnError
+    git merge --no-ff --no-edit hotfix/$Name || ExitOnError
     git tag -a $Name || ExitOnError
 
     # merge the tag into develop
 
     git checkout $DEVELOP || ExitOnError
     Has-Remote || git pull --rebase || ExitOnError
-    git merge --no-ff $Name || ExitOnError
+    git merge --no-ff --no-edit $Name || ExitOnError
 }
 
 If ($MyInvocation.InvocationName -ne ".")
