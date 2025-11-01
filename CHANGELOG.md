@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.2.0
+
+- Exit on first failed command
+- don't pull if no remote
+- don't edit on merges
+- delete merged branches on successful finish
+
 ## 0.1.2
 
 feature finish should do a `--no-ff` merge

@@ -1,14 +1,27 @@
 param(
-    [Parameter(Position = 0)]
+    [ValidateSet("feature","release", "hotfix")]
+    [Parameter(Position = 0, Mandatory=$true)]
     [string]$Command,
-    [Parameter(Position = 1)]
+    [ValidateSet("start","finish")]
+    [Parameter(Position = 1, Mandatory=$true)]
     [string]$Action,
-    [Parameter(Position = 2)]
+    [Parameter(Position = 2, Mandatory=$true)]
     [string]$Name
 )
 
 $DEVELOP = "develop"
 $MAIN = "main"
+
+$REMOTE = $null
+
+function Has-Remote {
+    $REMOTE ??= git remote
+    return $null -ne $REMOTE | Out-Null
+}
+
+function ExitOnError {
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
 
 function Git-Flow {
     switch ($Command)
@@ -49,81 +62,87 @@ function Git-Flow {
 function Feature-Start {
     param([string]$Name)
 
-    git checkout $DEVELOP
-    git pull --rebase
-    git checkout -b feature/$Name
+    git checkout $DEVELOP || ExitOnError
+    Has-Remote || git pull --rebase || ExitOnError
+    git checkout -b feature/$Name || ExitOnError
 }
 
 function Feature-Finish {
     param([string]$Name)
 
-    git checkout feature/$Name
-    git pull --rebase
+    git checkout feature/$Name || ExitOnError
+    Has-Remote || git pull --rebase || ExitOnError
 
-    git checkout $DEVELOP
-    git pull --rebase
+    git checkout $DEVELOP || ExitOnError
+    Has-Remote || git pull --rebase || ExitOnError
 
-    git merge --no-ff feature/$Name
+    git merge --no-ff --no-edit feature/$Name || ExitOnError
+
+    git branch -d feature/$Name || ExitOnError
 }
 
 function Release-Start {
-    param([string]$Name)
+    param([version]$Name)
 
     # create release branch from develop
 
-    git checkout $DEVELOP
-    git pull --rebase
-    git checkout -b release/$Name
+    git checkout $DEVELOP || ExitOnError
+    Has-Remote || git pull --rebase || ExitOnError
+    git checkout -b release/$Name || ExitOnError
 }
 
 function Release-Finish {
-    param([string]$Name)
+    param([version]$Name)
 
     # merge the release branch into main and tag it
-    git checkout release/$Name
-    git pull --rebase
+    git checkout release/$Name || ExitOnError
+    Has-Remote || git pull --rebase || ExitOnError
 
-    git checkout $MAIN
-    git pull --rebase
+    git checkout $MAIN || ExitOnError
+    Has-Remote || git pull --rebase || ExitOnError
 
-    git merge --no-ff release/$Name
-    git tag -a $Name
+    git merge --no-ff --no-edit release/$Name || ExitOnError
+    git tag -a $Name || ExitOnError
 
     # merge the tag into develop
 
-    git checkout $DEVELOP
-    git pull --rebase
-    git merge --no-ff $Name
+    git checkout $DEVELOP || ExitOnError
+    Has-Remote || git pull --rebase || ExitOnError
+    git merge --no-ff --no-edit $Name || ExitOnError
+
+    git branch -d release/$Name || ExitOnError
 }
 
 function Hotfix-Start {
-    param([string]$Name)
+    param([version]$Name)
 
     # create hotfix branch from main
 
-    git checkout $MAIN
-    git pull --rebase
-    git checkout -b hotfix/$Name
+    git checkout $MAIN || ExitOnError
+    Has-Remote || git pull --rebase || ExitOnError
+    git checkout -b hotfix/$Name || ExitOnError
 }
 
 function Hotfix-Finish {
-    param([string]$Name)
+    param([version]$Name)
 
     # merge the hotfix branch into main and tag it
-    git checkout hotfix/$Name
-    git pull --rebase
+    git checkout hotfix/$Name || ExitOnError
+    Has-Remote || git pull --rebase || ExitOnError
 
-    git checkout $MAIN
-    git pull --rebase
+    git checkout $MAIN || ExitOnError
+    Has-Remote || git pull --rebase || ExitOnError
 
-    git merge --no-ff hotfix/$Name
-    git tag -a $Name
+    git merge --no-ff --no-edit hotfix/$Name || ExitOnError
+    git tag -a $Name || ExitOnError
 
     # merge the tag into develop
 
-    git checkout $DEVELOP
-    git pull --rebase
-    git merge --no-ff $Name
+    git checkout $DEVELOP || ExitOnError
+    Has-Remote || git pull --rebase || ExitOnError
+    git merge --no-ff --no-edit $Name || ExitOnError
+
+    git branch -d hotfix/$Name || ExitOnError
 }
 
 If ($MyInvocation.InvocationName -ne ".")
