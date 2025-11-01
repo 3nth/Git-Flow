@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.4.0
+
+- FIX: don't exit shell on error
+- improvements
+
 ## 0.3.1
 
 - Better error messages
