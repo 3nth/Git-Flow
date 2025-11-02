@@ -4,7 +4,9 @@ param(
     [Parameter()]
     [string]$Action,
     [Parameter()]
-    [string]$Name
+    [string]$Name,
+    [Parameter()]
+    [switch]$Major
 )
 
 $DEVELOP = "develop"
@@ -27,6 +29,29 @@ Register-ArgumentCompleter -CommandName Git-Flow -ParameterName Name -ScriptBloc
 function HasRemote {
     $output = git remote
     return $null -ne $output | Out-Null
+}
+
+function GetLastVersion {
+    if(HasRemote) { git fetch --tags || { return } }
+    $last = git tag | Sort-Object { $_ -as [version]  } | Select-Object -Last 1
+    $last ??= "0.0.0" -as [version]
+    return $last
+}
+
+function GetNextReleaseVersion {
+    param(
+        [switch]$BumpMajor
+    )
+
+    [version]$last = GetLastVersion
+    $next = $BumpMajor -or $Major ? ([version]::new($last.Major + 1, 0, 0)) : ([version]::new($last.Major, $last.Minor + 1, 0))
+    return $next.ToString()
+}
+
+function GetNextHotfixVersion {
+    [version]$last = GetLastVersion
+    $next = [version]::new($last.Major, $last.Minor, $last.Build + 1)
+    return $next.ToString()
 }
 
 function VersionNumberIsValid {
@@ -68,7 +93,7 @@ function Git-Flow {
     param(
         [ArgumentCompletions('feature', 'release', 'hotfix')]
         [string]$Command,
-        [ArgumentCompletions('start', 'finish')]
+        [ArgumentCompletions('start', 'finish', 'version')]
         [string]$Action,
         [string]$Name
     )
@@ -97,9 +122,12 @@ function Git-Flow {
                 "finish" {
                     Release-Finish $Name | Out-Null
                 }
+                "version" {
+                    GetNextReleaseVersion
+                }
                 default {
                     Write-Host "Unknown Action:" $Action -Fore Red
-                    Write-Host "Valid actions are: start, finish" $Command -Fore Cyan
+                    Write-Host "Valid actions are: start, finish, version" $Command -Fore Cyan
                 }
             }
         }
@@ -111,9 +139,12 @@ function Git-Flow {
                 "finish" {
                     Hotfix-Finish $Name | Out-Null
                 }
+                "version" {
+                    GetNextHotfixVersion
+                }
                 default {
                     Write-Host "Unknown Action:" $Action -Fore Red
-                    Write-Host "Valid actions are: start, finish" $Command -Fore Cyan
+                    Write-Host "Valid actions are: start, finish, version" $Command -Fore Cyan
                 }
             }
         }
@@ -152,7 +183,7 @@ function Feature-Finish {
 
 function Release-Start {
     param([string]$Name)
-
+    $Name = $Name ? $Name : (GetNextReleaseVersion)
     if(!(VersionNumberIsValid "release" $Name)) { return }
 
     $Remote = HasRemote
@@ -193,6 +224,7 @@ function Release-Finish {
 function Hotfix-Start {
     param([string]$Name)
 
+    $Name = $Name ? $Name : (GetNextHotfixVersion)
     if(!(VersionNumberIsValid "hotfix" $Name)) { return }
 
     $Remote = HasRemote
