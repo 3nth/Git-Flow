@@ -4,7 +4,9 @@ param(
     [Parameter()]
     [string]$Action,
     [Parameter()]
-    [string]$Name
+    [string]$Name,
+    [Parameter()]
+    [switch]$Major
 )
 
 $DEVELOP = "develop"
@@ -42,7 +44,7 @@ function GetNextReleaseVersion {
     )
 
     [version]$last = GetLastVersion
-    $next = $BumpMajor ? ([version]::new($last.Major + 1, 0, 0)) : ([version]::new($last.Major, $last.Minor + 1, 0))
+    $next = $BumpMajor -or $Major ? ([version]::new($last.Major + 1, 0, 0)) : ([version]::new($last.Major, $last.Minor + 1, 0))
     return $next.ToString()
 }
 
