@@ -93,7 +93,7 @@ function Git-Flow {
     param(
         [ArgumentCompletions('feature', 'release', 'hotfix')]
         [string]$Command,
-        [ArgumentCompletions('start', 'finish')]
+        [ArgumentCompletions('start', 'finish', 'version')]
         [string]$Action,
         [string]$Name
     )
@@ -122,9 +122,12 @@ function Git-Flow {
                 "finish" {
                     Release-Finish $Name | Out-Null
                 }
+                "version" {
+                    GetNextReleaseVersion
+                }
                 default {
                     Write-Host "Unknown Action:" $Action -Fore Red
-                    Write-Host "Valid actions are: start, finish" $Command -Fore Cyan
+                    Write-Host "Valid actions are: start, finish, version" $Command -Fore Cyan
                 }
             }
         }
@@ -136,9 +139,12 @@ function Git-Flow {
                 "finish" {
                     Hotfix-Finish $Name | Out-Null
                 }
+                "version" {
+                    GetNextHotfixVersion
+                }
                 default {
                     Write-Host "Unknown Action:" $Action -Fore Red
-                    Write-Host "Valid actions are: start, finish" $Command -Fore Cyan
+                    Write-Host "Valid actions are: start, finish, version" $Command -Fore Cyan
                 }
             }
         }
