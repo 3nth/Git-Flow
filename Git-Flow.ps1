@@ -29,6 +29,25 @@ function HasRemote {
     return $null -ne $output | Out-Null
 }
 
+function GetLastVersion {
+    if(HasRemote) { git fetch --tags || { return } }
+    $last = git tag | Sort-Object { $_ -as [version]  } | Select-Object -Last 1
+    $last ??= "0.0.0" -as [version]
+    return $last
+}
+
+function GetNextMinorReleaseVersion {
+    [version]$last = GetLastVersion
+    $next = [version]::new($last.Major, $last.Minor + 1, 0)
+    return $next.ToString()
+}
+
+function GetNextHotfixVersion {
+    [version]$last = GetLastVersion
+    $next = [version]::new($last.Major, $last.Minor, $last.Build + 1)
+    return $next.ToString()
+}
+
 function VersionNumberIsValid {
     param(
         [string]$Command,
@@ -152,7 +171,7 @@ function Feature-Finish {
 
 function Release-Start {
     param([string]$Name)
-
+    $Name = $Name ? $Name : (GetNextMinorReleaseVersion)
     if(!(VersionNumberIsValid "release" $Name)) { return }
 
     $Remote = HasRemote
@@ -193,6 +212,7 @@ function Release-Finish {
 function Hotfix-Start {
     param([string]$Name)
 
+    $Name = $Name ? $Name : (GetNextHotfixVersion)
     if(!(VersionNumberIsValid "hotfix" $Name)) { return }
 
     $Remote = HasRemote
