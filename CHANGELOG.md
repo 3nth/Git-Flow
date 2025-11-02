@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.5.0
+
+- NEW: Automatic versioning for release/hotfix start
+- FIX: error handling when commands fail
+
 ## 0.4.1
 
 - FIX: Feature-Start needs to call HasRemote

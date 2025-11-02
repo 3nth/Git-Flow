@@ -4,8 +4,13 @@ param(
     [Parameter()]
     [string]$Action,
     [Parameter()]
-    [string]$Name
+    [string]$Name,
+    [Parameter()]
+    [switch]$Major
 )
+
+$ErrorActionPreference = "Stop"
+$PSNativeCommandUseErrorActionPreference = $true
 
 $DEVELOP = "develop"
 $MAIN = "main"
@@ -27,6 +32,29 @@ Register-ArgumentCompleter -CommandName Git-Flow -ParameterName Name -ScriptBloc
 function HasRemote {
     $output = git remote
     return $null -ne $output | Out-Null
+}
+
+function GetLastVersion {
+    if(HasRemote) { git fetch --tags }
+    $last = git tag | Sort-Object { $_ -as [version]  } | Select-Object -Last 1
+    $last ??= "0.0.0" -as [version]
+    return $last
+}
+
+function GetNextReleaseVersion {
+    param(
+        [switch]$BumpMajor
+    )
+
+    [version]$last = GetLastVersion
+    $next = $BumpMajor -or $Major ? ([version]::new($last.Major + 1, 0, 0)) : ([version]::new($last.Major, $last.Minor + 1, 0))
+    return $next.ToString()
+}
+
+function GetNextHotfixVersion {
+    [version]$last = GetLastVersion
+    $next = [version]::new($last.Major, $last.Minor, $last.Build + 1)
+    return $next.ToString()
 }
 
 function VersionNumberIsValid {
@@ -68,59 +96,70 @@ function Git-Flow {
     param(
         [ArgumentCompletions('feature', 'release', 'hotfix')]
         [string]$Command,
-        [ArgumentCompletions('start', 'finish')]
+        [ArgumentCompletions('start', 'finish', 'version')]
         [string]$Action,
         [string]$Name
     )
 
-    switch ($Command)
-    {
-        "feature" {
-            switch ($Action) {
-                "start" {
-                    Feature-Start $Name | Out-Null
+    try {
+        switch ($Command)
+        {
+            "feature" {
+                switch ($Action) {
+                    "start" {
+                        Feature-Start $Name | Out-Null
+                    }
+                    "finish" {
+                        Feature-Finish $Name | Out-Null
+                    }
+                    default {
+                        Write-Host "Unknown Action:" $Action -Fore Red
+                        Write-Host "Valid actions are: start, finish" $Command -Fore Cyan
+                    }
                 }
-                "finish" {
-                    Feature-Finish $Name | Out-Null
+            }
+            "release" {
+                switch ($Action) {
+                    "start" {
+                        Release-Start $Name | Out-Null
+                    }
+                    "finish" {
+                        Release-Finish $Name | Out-Null
+                    }
+                    "version" {
+                        GetNextReleaseVersion
+                    }
+                    default {
+                        Write-Host "Unknown Action:" $Action -Fore Red
+                        Write-Host "Valid actions are: start, finish, version" $Command -Fore Cyan
+                    }
+                }
+            }
+            "hotfix" {
+                switch ($Action) {
+                    "start" {
+                        Hotfix-Start $Name | Out-Null
+                    }
+                    "finish" {
+                        Hotfix-Finish $Name | Out-Null
+                    }
+                    "version" {
+                        GetNextHotfixVersion
+                    }
+                    default {
+                        Write-Host "Unknown Action:" $Action -Fore Red
+                        Write-Host "Valid actions are: start, finish, version" $Command -Fore Cyan
+                    }
                 }
                 default {
-                    Write-Host "Unknown Action:" $Action -Fore Red
-                    Write-Host "Valid actions are: start, finish" $Command -Fore Cyan
+                    Write-Host "Unknown Command:" $Command -Fore Red
+                    Write-Host "Valid commands are: feature, release, hotfix" $Command -Fore Cyan
                 }
             }
         }
-        "release" {
-            switch ($Action) {
-                "start" {
-                    Release-Start $Name | Out-Null
-                }
-                "finish" {
-                    Release-Finish $Name | Out-Null
-                }
-                default {
-                    Write-Host "Unknown Action:" $Action -Fore Red
-                    Write-Host "Valid actions are: start, finish" $Command -Fore Cyan
-                }
-            }
-        }
-        "hotfix" {
-            switch ($Action) {
-                "start" {
-                    Hotfix-Start $Name | Out-Null
-                }
-                "finish" {
-                    Hotfix-Finish $Name | Out-Null
-                }
-                default {
-                    Write-Host "Unknown Action:" $Action -Fore Red
-                    Write-Host "Valid actions are: start, finish" $Command -Fore Cyan
-                }
-            }
-        }
-        default {
-            Write-Host "Unknown Command:" $Command -Fore Red
-            Write-Host "Valid commands are: feature, release, hotfix" $Command -Fore Cyan
-        }
+    }
+    catch [System.Management.Automation.NativeCommandExitException] {
+        <#Do this if a terminating exception happens#>
     }
 }
 
@@ -129,9 +168,9 @@ function Feature-Start {
 
     $Remote = HasRemote
 
-    git checkout $DEVELOP || { return }
-    if($Remote) { git pull --rebase || { return } }
-    git checkout -b feature/$Name || { return }
+    git checkout $DEVELOP
+    if($Remote) { git pull --rebase }
+    git checkout -b feature/$Name
 }
 
 function Feature-Finish {
@@ -139,29 +178,29 @@ function Feature-Finish {
 
     $Remote = HasRemote
 
-    git checkout feature/$Name || { return }
-    if($Remote) { git pull --rebase || { return } }
+    git checkout feature/$Name
+    if($Remote) { git pull --rebase }
 
-    git checkout $DEVELOP || { return }
-    if($Remote) { git pull --rebase || { return } }
+    git checkout $DEVELOP
+    if($Remote) { git pull --rebase }
 
-    git merge --no-ff --no-edit feature/$Name || { return }
+    git merge --no-ff --no-edit feature/$Name
 
-    git branch -d feature/$Name || { return }
+    git branch -d feature/$Name
 }
 
 function Release-Start {
     param([string]$Name)
-
+    $Name = $Name ? $Name : (GetNextReleaseVersion)
     if(!(VersionNumberIsValid "release" $Name)) { return }
 
     $Remote = HasRemote
 
     # create release branch from develop
 
-    git checkout $DEVELOP || { return }
-    if($Remote) { git pull --rebase || { return } }
-    git checkout -b release/$Name || { return }
+    git checkout $DEVELOP
+    if($Remote) { git pull --rebase }
+    git checkout -b release/$Name
 }
 
 function Release-Finish {
@@ -172,36 +211,37 @@ function Release-Finish {
     $Remote = HasRemote
 
     # merge the release branch into main and tag it
-    git checkout release/$Name || { return }
-    if($Remote) { git pull --rebase || { return } }
+    git checkout release/$Name
+    if($Remote) { git pull --rebase }
 
-    git checkout $MAIN || { return }
-    if($Remote) { git pull --rebase || { return } }
+    git checkout $MAIN
+    if($Remote) { git pull --rebase }
 
-    git merge --no-ff --no-edit release/$Name || { return }
-    git tag -a $Name || { return }
+    git merge --no-ff --no-edit release/$Name
+    git tag -a $Name
 
     # merge the tag into develop
 
-    git checkout $DEVELOP || { return }
-    if($Remote) { git pull --rebase || { return } }
-    git merge --no-ff --no-edit $Name || { return }
+    git checkout $DEVELOP
+    if($Remote) { git pull --rebase }
+    git merge --no-ff --no-edit $Name
 
-    git branch -d release/$Name || { return }
+    git branch -d release/$Name
 }
 
 function Hotfix-Start {
     param([string]$Name)
 
+    $Name = $Name ? $Name : (GetNextHotfixVersion)
     if(!(VersionNumberIsValid "hotfix" $Name)) { return }
 
     $Remote = HasRemote
 
     # create hotfix branch from main
 
-    git checkout $MAIN || { return }
-    if($Remote) { git pull --rebase || { return } }
-    git checkout -b hotfix/$Name || { return }
+    git checkout $MAIN
+    if($Remote) { git pull --rebase }
+    git checkout -b hotfix/$Name
 }
 
 function Hotfix-Finish {
@@ -212,22 +252,22 @@ function Hotfix-Finish {
     $Remote = HasRemote
 
     # merge the hotfix branch into main and tag it
-    git checkout hotfix/$Name || { return }
-    if($Remote) { git pull --rebase || { return } }
+    git checkout hotfix/$Name
+    if($Remote) { git pull --rebase }
 
-    git checkout $MAIN || { return }
-    if($Remote) { git pull --rebase || { return } }
+    git checkout $MAIN
+    if($Remote) { git pull --rebase }
 
-    git merge --no-ff --no-edit hotfix/$Name || { return }
-    git tag -a $Name || { return }
+    git merge --no-ff --no-edit hotfix/$Name
+    git tag -a $Name
 
     # merge the tag into develop
 
-    git checkout $DEVELOP || { return }
-    if($Remote) { git pull --rebase || { return } }
-    git merge --no-ff --no-edit $Name || { return }
+    git checkout $DEVELOP
+    if($Remote) { git pull --rebase }
+    git merge --no-ff --no-edit $Name
 
-    git branch -d hotfix/$Name || { return }
+    git branch -d hotfix/$Name
 }
 
 If ($MyInvocation.InvocationName -ne ".")

@@ -22,17 +22,53 @@ To use it as `git flow` add an alias
 
 You can also import the `Git-Flow` function into PowerShell and get tab completion when calling.
 
-    . ~/Git-Flow/Git-Flow.ps1
+    . ~/Git-Flow.ps1
 
 Add that line to your `$PROFILE` to make it permanent.
 
 
 ## DOES
 
-- It does `git flow feature`
-- It does `git flow release` and want's X.Y.Z version numbers
-- It does `git flow hotfix` and wants X.Y.Z version numbers
-- It does expect a `main` and `develop` branch to exist.
+- It does `git flow feature NAME`
+- It does `git flow release MAJOR.MINOR.PATCH` and expects `PATCH` to be `0` for a release
+- It does `git flow hotfix MAJOR.MINOR.PATCH` and expects `PATCH` to be greater than`0` for a hotfix
+- It does expect your production branch is named `main` 
+- It does expect your development branch is named `develop`
+
+## New Tricks
+
+Version can be calculated for release/hotfix branches based off last tagged version (version order, not tag date)
+
+Calculate the next minor release version
+
+    git flow release version
+
+Calculate the next major release version
+
+    git flow release version --major
+
+Calculate the next hotfix version
+
+    git flow hotfix version
+
+Bump the MINOR version (PATCH set to 0)
+
+    git flow release start
+
+Bump the PATCH version
+
+    git flow hotfix start
+
+Bump the MAJOR version (MINOR/PATCH set to 0)
+
+    git flow release start --major
+
+Adds commands to powershell
+
+    GetLastVersion
+    GetNextReleaseVersion
+    GetNextReleaseVersion --BumpMajor
+    GetNextHotfixVersion
 
 ## DOESN'T
 
