@@ -36,9 +36,13 @@ function GetLastVersion {
     return $last
 }
 
-function GetNextMinorReleaseVersion {
+function GetNextReleaseVersion {
+    param(
+        [switch]$BumpMajor
+    )
+
     [version]$last = GetLastVersion
-    $next = [version]::new($last.Major, $last.Minor + 1, 0)
+    $next = $BumpMajor ? ([version]::new($last.Major + 1, 0, 0)) : ([version]::new($last.Major, $last.Minor + 1, 0))
     return $next.ToString()
 }
 
@@ -171,7 +175,7 @@ function Feature-Finish {
 
 function Release-Start {
     param([string]$Name)
-    $Name = $Name ? $Name : (GetNextMinorReleaseVersion)
+    $Name = $Name ? $Name : (GetNextReleaseVersion)
     if(!(VersionNumberIsValid "release" $Name)) { return }
 
     $Remote = HasRemote
