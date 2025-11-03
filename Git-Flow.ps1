@@ -151,10 +151,10 @@ function Git-Flow {
                         Write-Host "Valid actions are: start, finish, version" $Command -Fore Cyan
                     }
                 }
-                default {
-                    Write-Host "Unknown Command:" $Command -Fore Red
-                    Write-Host "Valid commands are: feature, release, hotfix" $Command -Fore Cyan
-                }
+            }
+            default {
+                Write-Host "Unknown Command:" $Command -Fore Red
+                Write-Host "Valid commands are: feature, release, hotfix" $Command -Fore Cyan
             }
         }
     }
